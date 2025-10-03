@@ -1,1 +1,470 @@
 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Class Presentation Manager</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+        
+        header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        h1 {
+            font-size: 2em;
+            margin-bottom: 5px;
+        }
+        
+        .subtitle {
+            opacity: 0.9;
+            font-size: 0.9em;
+        }
+        
+        .tabs {
+            display: flex;
+            background: #f5f5f5;
+            overflow-x: auto;
+            border-bottom: 2px solid #ddd;
+        }
+        
+        .tab {
+            padding: 15px 25px;
+            cursor: pointer;
+            border: none;
+            background: none;
+            font-size: 1em;
+            font-weight: 600;
+            color: #666;
+            transition: all 0.3s;
+            white-space: nowrap;
+        }
+        
+        .tab:hover {
+            background: #e8e8e8;
+        }
+        
+        .tab.active {
+            background: white;
+            color: #667eea;
+            border-bottom: 3px solid #667eea;
+        }
+        
+        .content {
+            padding: 30px;
+        }
+        
+        .class-section {
+            display: none;
+        }
+        
+        .class-section.active {
+            display: block;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        input, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1em;
+            font-family: inherit;
+            transition: border-color 0.3s;
+        }
+        
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+        
+        .button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 8px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .button:active {
+            transform: translateY(0);
+        }
+        
+        .assignments {
+            margin-top: 30px;
+        }
+        
+        .assignment-card {
+            background: #f9f9f9;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            border-left: 4px solid #667eea;
+            position: relative;
+        }
+        
+        .assignment-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 10px;
+        }
+        
+        .topic {
+            font-size: 1.1em;
+            font-weight: 600;
+            color: #333;
+            flex: 1;
+        }
+        
+        .partners {
+            color: #666;
+            margin-top: 8px;
+        }
+        
+        .partners strong {
+            color: #667eea;
+        }
+        
+        .delete-btn {
+            background: #ff4757;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.85em;
+            transition: background 0.2s;
+        }
+        
+        .delete-btn:hover {
+            background: #ff3838;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+        }
+        
+        .section-title {
+            font-size: 1.3em;
+            color: #333;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📚 Presentation Manager</h1>
+            <p class="subtitle">Manage presentation topics and partners for all classes</p>
+            <div style="margin-top: 15px;">
+                <button class="button" onclick="exportData()" style="margin-right: 10px; padding: 8px 20px; font-size: 0.9em;">💾 Export Data</button>
+                <button class="button" onclick="document.getElementById('importFile').click()" style="padding: 8px 20px; font-size: 0.9em;">📥 Import Data</button>
+                <input type="file" id="importFile" accept=".json" style="display: none;" onchange="importData(event)">
+            </div>
+        </header>
+        
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab('PME1')">PME1</button>
+            <button class="tab" onclick="switchTab('ELT1')">ELT1</button>
+            <button class="tab" onclick="switchTab('CPI1')">CPI1</button>
+            <button class="tab" onclick="switchTab('PME2')">PME2</button>
+            <button class="tab" onclick="switchTab('ELT2')">ELT2</button>
+            <button class="tab" onclick="switchTab('CPI2')">CPI2</button>
+        </div>
+        
+        <div class="content">
+            <div id="PME1" class="class-section active">
+                <h2 class="section-title">PME1 - Add Presentation</h2>
+                <div class="form-group">
+                    <label>Presentation Topic</label>
+                    <input type="text" id="topic-PME1" placeholder="Enter presentation topic">
+                </div>
+                <div class="form-group">
+                    <label>Partner Names</label>
+                    <textarea id="partners-PME1" placeholder="Enter partner names (e.g., John Doe, Jane Smith)"></textarea>
+                </div>
+                <button class="button" onclick="addAssignment('PME1')">Add Assignment</button>
+                
+                <div class="assignments" id="assignments-PME1"></div>
+            </div>
+            
+            <div id="ELT1" class="class-section">
+                <h2 class="section-title">ELT1 - Add Presentation</h2>
+                <div class="form-group">
+                    <label>Presentation Topic</label>
+                    <input type="text" id="topic-ELT1" placeholder="Enter presentation topic">
+                </div>
+                <div class="form-group">
+                    <label>Partner Names</label>
+                    <textarea id="partners-ELT1" placeholder="Enter partner names (e.g., John Doe, Jane Smith)"></textarea>
+                </div>
+                <button class="button" onclick="addAssignment('ELT1')">Add Assignment</button>
+                
+                <div class="assignments" id="assignments-ELT1"></div>
+            </div>
+            
+            <div id="CPI1" class="class-section">
+                <h2 class="section-title">CPI1 - Add Presentation</h2>
+                <div class="form-group">
+                    <label>Presentation Topic</label>
+                    <input type="text" id="topic-CPI1" placeholder="Enter presentation topic">
+                </div>
+                <div class="form-group">
+                    <label>Partner Names</label>
+                    <textarea id="partners-CPI1" placeholder="Enter partner names (e.g., John Doe, Jane Smith)"></textarea>
+                </div>
+                <button class="button" onclick="addAssignment('CPI1')">Add Assignment</button>
+                
+                <div class="assignments" id="assignments-CPI1"></div>
+            </div>
+            
+            <div id="PME2" class="class-section">
+                <h2 class="section-title">PME2 - Add Presentation</h2>
+                <div class="form-group">
+                    <label>Presentation Topic</label>
+                    <input type="text" id="topic-PME2" placeholder="Enter presentation topic">
+                </div>
+                <div class="form-group">
+                    <label>Partner Names</label>
+                    <textarea id="partners-PME2" placeholder="Enter partner names (e.g., John Doe, Jane Smith)"></textarea>
+                </div>
+                <button class="button" onclick="addAssignment('PME2')">Add Assignment</button>
+                
+                <div class="assignments" id="assignments-PME2"></div>
+            </div>
+            
+            <div id="ELT2" class="class-section">
+                <h2 class="section-title">ELT2 - Add Presentation</h2>
+                <div class="form-group">
+                    <label>Presentation Topic</label>
+                    <input type="text" id="topic-ELT2" placeholder="Enter presentation topic">
+                </div>
+                <div class="form-group">
+                    <label>Partner Names</label>
+                    <textarea id="partners-ELT2" placeholder="Enter partner names (e.g., John Doe, Jane Smith)"></textarea>
+                </div>
+                <button class="button" onclick="addAssignment('ELT2')">Add Assignment</button>
+                
+                <div class="assignments" id="assignments-ELT2"></div>
+            </div>
+            
+            <div id="CPI2" class="class-section">
+                <h2 class="section-title">CPI2 - Add Presentation</h2>
+                <div class="form-group">
+                    <label>Presentation Topic</label>
+                    <input type="text" id="topic-CPI2" placeholder="Enter presentation topic">
+                </div>
+                <div class="form-group">
+                    <label>Partner Names</label>
+                    <textarea id="partners-CPI2" placeholder="Enter partner names (e.g., John Doe, Jane Smith)"></textarea>
+                </div>
+                <button class="button" onclick="addAssignment('CPI2')">Add Assignment</button>
+                
+                <div class="assignments" id="assignments-CPI2"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Load data from storage or initialize empty
+        let classData = {
+            PME1: [],
+            ELT1: [],
+            CPI1: [],
+            PME2: [],
+            ELT2: [],
+            CPI2: []
+        };
+
+        // Load saved data on page load
+        function loadData() {
+            const saved = localStorage.getItem('presentationData');
+            if (saved) {
+                try {
+                    classData = JSON.parse(saved);
+                } catch (e) {
+                    console.error('Error loading data:', e);
+                }
+            }
+        }
+
+        // Save data to storage
+        function saveData() {
+            localStorage.setItem('presentationData', JSON.stringify(classData));
+        }
+
+        // Export data as JSON file
+        function exportData() {
+            const dataStr = JSON.stringify(classData, null, 2);
+            const dataBlob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(dataBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `presentation-data-${new Date().toISOString().split('T')[0]}.json`;
+            link.click();
+            URL.revokeObjectURL(url);
+            alert('Data exported successfully!');
+        }
+
+        // Import data from JSON file
+        function importData(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const imported = JSON.parse(e.target.result);
+                    if (confirm('This will replace all current data. Continue?')) {
+                        classData = imported;
+                        saveData();
+                        // Refresh all displays
+                        Object.keys(classData).forEach(className => {
+                            displayAssignments(className);
+                        });
+                        alert('Data imported successfully!');
+                    }
+                } catch (error) {
+                    alert('Error importing file. Please ensure it\'s a valid JSON file.');
+                }
+            };
+            reader.readAsText(file);
+            event.target.value = '';
+        }
+
+        // Initialize on page load
+        loadData();
+
+        function switchTab(className) {
+            // Update tabs
+            const tabs = document.querySelectorAll('.tab');
+            tabs.forEach(tab => tab.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            // Update content
+            const sections = document.querySelectorAll('.class-section');
+            sections.forEach(section => section.classList.remove('active'));
+            document.getElementById(className).classList.add('active');
+        }
+
+        function addAssignment(className) {
+            const topicInput = document.getElementById(`topic-${className}`);
+            const partnersInput = document.getElementById(`partners-${className}`);
+            
+            const topic = topicInput.value.trim();
+            const partners = partnersInput.value.trim();
+            
+            if (!topic || !partners) {
+                alert('Please fill in both topic and partner names!');
+                return;
+            }
+            
+            // Add to data
+            classData[className].push({
+                topic: topic,
+                partners: partners,
+                id: Date.now()
+            });
+            
+            // Save to storage
+            saveData();
+            
+            // Clear inputs
+            topicInput.value = '';
+            partnersInput.value = '';
+            
+            // Update display
+            displayAssignments(className);
+        }
+
+        function deleteAssignment(className, id) {
+            classData[className] = classData[className].filter(item => item.id !== id);
+            saveData();
+            displayAssignments(className);
+        }
+
+        function displayAssignments(className) {
+            const container = document.getElementById(`assignments-${className}`);
+            const assignments = classData[className];
+            
+            if (assignments.length === 0) {
+                container.innerHTML = '<div class="empty-state">No presentations assigned yet</div>';
+                return;
+            }
+            
+            container.innerHTML = `
+                <h3 class="section-title" style="margin-top: 30px;">Assigned Presentations</h3>
+                ${assignments.map(assignment => `
+                    <div class="assignment-card">
+                        <div class="assignment-header">
+                            <div>
+                                <div class="topic">${assignment.topic}</div>
+                                <div class="partners"><strong>Partners:</strong> ${assignment.partners}</div>
+                            </div>
+                            <button class="delete-btn" onclick="deleteAssignment('${className}', ${assignment.id})">Delete</button>
+                        </div>
+                    </div>
+                `).join('')}
+            `;
+        }
+
+        // Initialize displays
+        Object.keys(classData).forEach(className => {
+            displayAssignments(className);
+        });
+    </script>
+</body>
+</html>
